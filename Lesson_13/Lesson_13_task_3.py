@@ -1,8 +1,8 @@
 def choose_func(nums, func1, func2):
     if sum([1 for i in nums if i >= 0]) == len(nums):
-        return func1
+        return func1(nums)
     else:
-        return func2
+        return func2(nums)
 
 
 # Assertions
@@ -20,5 +20,5 @@ def remove_negatives(nums):
     return [num for num in nums if num > 0]
 
 
-print(choose_func(nums1, square_nums(nums1), remove_negatives(nums1)))
-print(choose_func(nums2, square_nums(nums2), remove_negatives(nums2)))
+print(choose_func(nums1, square_nums, remove_negatives))
+print(choose_func(nums2, square_nums, remove_negatives))
