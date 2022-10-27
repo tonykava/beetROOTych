@@ -41,8 +41,26 @@ for i in hours_priority:
     for j in free_hours:
         if i in free_hours[j]:
             hours_priority[i] += 1
-sorted_hours_priority = sorted(hours_priority.items(), key=lambda x: x[1])
-print(sorted_hours_priority)
 
+def sort_hours_priority(time):
+    d = {}
+    s = sorted(time.items(), key=lambda x: x[1])
+    for i in range(len(s)):
+        d[s[i][0]] = s[i][-1]
+    return d
+
+
+final_dic = {}
+
+for i in free_hours:
+    if list(hours_priority)[0] in free_hours[i]:
+        final_dic[i] = list(hours_priority)[0]
+        free_hours[i].remove(list(hours_priority)[0])
+        hours_priority.pop(list(hours_priority)[0])
+        for j in free_hours[i]:
+            hours_priority[j] -= 1
+        hours_priority = sort_hours_priority(hours_priority)
+
+print(final_dic)
 
 
