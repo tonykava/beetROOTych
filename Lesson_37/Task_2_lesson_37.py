@@ -27,11 +27,3 @@ df_final = df_final.to_json(orient='records', date_format='iso')
 
 with open('data.json', 'w') as f:
     json.dump(df_final, f)
-
-
-
-
-
-
-
-
