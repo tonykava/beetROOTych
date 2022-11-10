@@ -21,14 +21,3 @@ try:
 except Exception as e:
     print('FATAL ERROR')
     pass
-
-
-
-
-
-
-
-
-
-
-
