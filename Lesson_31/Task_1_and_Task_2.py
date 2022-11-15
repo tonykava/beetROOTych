@@ -52,6 +52,7 @@ class BinaryHeap:
             i = i - 1
 
 class PriorityQueue:
+    
     def __init__(self, arr):
         self.arr = arr
         self.pq = BinaryHeap()
