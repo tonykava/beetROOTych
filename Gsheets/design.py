@@ -8,6 +8,11 @@ from pprint import pprint
 from kivy.uix.label import Label
 
 
+a = ''
+b = ''
+
+
+
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
 client = gspread.authorize(creds)
@@ -78,25 +83,67 @@ class MyApp(App):
         box.add_widget(btn5)
         box.add_widget(btn6)
         self.sm = ScreenManager()
-        screen = Screen()
+        screen = Screen(name='m')
         screen.add_widget(box)
         self.sm.add_widget(screen)
+
+        self.screen2 = Screen(name='s')
+        self.box2 = BoxLayout(orientation='horizontal')
+        self.lbox = BoxLayout(orientation='vertical')
+        self.rbox = BoxLayout(orientation='vertical')
+        self.box2.add_widget(self.lbox)
+        self.box2.add_widget(self.rbox)
+        self.screen2.add_widget(self.box2)
+        self.sm.add_widget(self.screen2)
+
+
+        self.final_screen = Screen(name='final')
+        self.finalbox = BoxLayout()
+        self.final_screen.add_widget(self.finalbox)
+        self.sm.add_widget(self.final_screen)
         return self.sm
+
+    def func(self, button):
+        global a
+        global b
+        global loaded_hours
+        if a == '':
+            a = button.text
+        else:
+            b = button.text
+            loaded_hours[f'{a}///{b}'] = list(set(loaded_hours[a] + loaded_hours[b]))
+            loaded_hours.pop(a)
+            loaded_hours.pop(b)
+            self.lbox.clear_widgets()
+            self.rbox.clear_widgets()
+            self.half_hour()
+
+
+
 
     def half_hour(self):
         global loaded_hours
+        global a
+        global b
+        if len(loaded_hours) <= 7:
+            self.final()
+        else:
+            a, b = '', ''
+
+            for i in loaded_hours:
+                btn = Button(text=f'{i}',)
+                btn.bind(on_press=self.func)
+
+                lbl = Label(text=f'{sorted([int(j) for j in loaded_hours[i]])}',
+                            )
+                self.lbox.add_widget(btn)
+                self.rbox.add_widget(lbl)
+                self.sm.current = 's'
 
 
-        pprint(loaded_hours)
-        a = input('First: ')
-        b = input('Second: ')
-        loaded_hours[f'{a} {b}'] = list(set(loaded_hours[a] + loaded_hours[b]))
-        loaded_hours.pop(a)
-        loaded_hours.pop(b)
-        s = Screen(name='s')
-        self.sm.add_widget(s)
-        self.sm.current = 's'
-        return self.sm
+
+
+
 
     def sort_hours_priority(self, time):
         d = {}
@@ -130,8 +177,13 @@ class MyApp(App):
         loaded_hours = true_loaded_hours
 
         if len(loaded_hours) > 7:
-            for i in range(len(loaded_hours) - 7):
                 self.half_hour()
+
+
+    def final(self):
+        global hours_priority
+        global loaded_hours
+        global free_hours
 
         for i in loaded_hours:
             free_hours[i] = [j for j in sample if j not in loaded_hours[i]]
@@ -157,7 +209,17 @@ class MyApp(App):
         for i in final_dic:
             final_dic[i] += ':00'
 
-        pprint(final_dic)
+
+        str_f_l = ''
+        for i in final_dic:
+            str_f_l += f'{i}: {final_dic[i]}\n'
+
+        self.finalbox.add_widget(Label(text=str_f_l))
+        self.sm.current = 'final'
+        return self.sm.current
+
+
+
 
 
 
