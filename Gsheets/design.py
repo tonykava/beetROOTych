@@ -181,6 +181,7 @@ class MyApp(App):
 
 
     def final(self):
+        global final_dic
         global hours_priority
         global loaded_hours
         global free_hours
@@ -208,6 +209,17 @@ class MyApp(App):
 
         for i in final_dic:
             final_dic[i] += ':00'
+            
+        true_final_dic = {}
+
+        for i in final_dic:
+            if '///' in i:
+                true_final_dic[i.split('///')[0]] = final_dic[i] + '(30хв)'
+                true_final_dic[i.split('///')[-1]] = final_dic[i][0:3:] + '30' + '(30хв)'
+            else:
+                true_final_dic[i] = final_dic[i]
+
+        final_dic = true_final_dic
 
 
         str_f_l = ''
