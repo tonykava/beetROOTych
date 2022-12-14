@@ -1,16 +1,22 @@
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.button import Button
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from kivymd.app import MDApp
+from kivymd.uix.button import MDRoundFlatButton, MDFlatButton
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.screenmanager import MDScreenManager
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.behaviors import HoverBehavior
+from kivymd.uix.label import MDLabel
+from kivy.animation import Animation
+from kivy.core.window import Window
 from pprint import pprint
-from kivy.uix.label import Label
-
+from kivy.metrics import dp
+from kivymd.uix.datatables import MDDataTable
+Window.fullscreen = 'auto'
 
 a = ''
 b = ''
-
 
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
@@ -38,67 +44,58 @@ true_loaded_hours = {}
 free_hours = {}
 sample = ['9', '10', '11', '12', '14', '15', '16']
 
+class HoverButton(MDRoundFlatButton, HoverBehavior):
+    def on_enter(self, *args):
+        self.md_bg_color = (255/255, 152/255, 0/255, 255/255)
+        self.text_color = (2/255, 0/255, 1/255, 1)
 
-class MyApp(App):
+
+    def on_leave(self, *args):
+        self.md_bg_color = self.theme_cls.bg_darkest
+        self.text_color = (255/255, 152/255, 0/255, 255/255)
+
+
+class MyApp(MDApp):
     def __init__(self):
         super().__init__()
+        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.primary_palette = 'Orange'
 
     def build(self):
-        box = BoxLayout(orientation='vertical', spacing=10)
-        btn1 = Button(text='Понеділок',
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
-        btn1.bind(on_press=self.monday)
-        btn2 = Button(text='Вівторок',
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
-        btn3 = Button(text='Середа',
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
-        btn4 = Button(text='Четвер',
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
-        btn5 = Button(text="П'ятниця",
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
-        btn6 = Button(text='Субота',
-                      font_size=50,
-                      size_hint=(.6, .6),
-                      pos_hint={'x': .2, 'y': .2},
-                      padding_x=100)
+
+        box = MDBoxLayout(orientation='vertical', spacing='16dp', adaptive_size=True,
+                          pos_hint={"center_x": .5, "center_y": .5})
+        btn1 = HoverButton(text='Понеділок', line_width=2, font_size=50, font_name='AA-Haymaker.ttf')
+        btn1.bind(on_release=self.monday)
+        btn2 = HoverButton(text='Вівторок', line_width=2, font_size=50, pos_hint={"center_x": .5, "center_y": .5}, font_name='AA-Haymaker.ttf')
+        btn2.bind(on_release=self.tuesday)
+        btn3 = HoverButton(text='Середа', line_width=2, font_size=50, pos_hint={"center_x": .5, "center_y": .5}, font_name='AA-Haymaker.ttf')
+        btn4 = HoverButton(text='Четвер', line_width=2, font_size=50, pos_hint={"center_x": .5, "center_y": .5}, font_name='AA-Haymaker.ttf')
+        btn5 = HoverButton(text="П'ятниця", line_width=2, font_size=50, pos_hint={"center_x": .5, "center_y": .5}, font_name='AA-Haymaker.ttf')
+        btn6 = HoverButton(text='Субота', line_width=2, font_size=50, pos_hint={"center_x": .5, "center_y": .5}, font_name='AA-Haymaker.ttf')
         box.add_widget(btn1)
         box.add_widget(btn2)
         box.add_widget(btn3)
         box.add_widget(btn4)
         box.add_widget(btn5)
         box.add_widget(btn6)
-        self.sm = ScreenManager()
-        screen = Screen(name='m')
+        self.sm = MDScreenManager()
+        screen = MDScreen(name='m')
         screen.add_widget(box)
         self.sm.add_widget(screen)
 
-        self.screen2 = Screen(name='s')
-        self.box2 = BoxLayout(orientation='horizontal')
-        self.lbox = BoxLayout(orientation='vertical')
-        self.rbox = BoxLayout(orientation='vertical')
+        self.screen2 = MDScreen(name='s')
+        self.box2 = MDBoxLayout(orientation='horizontal')
+        self.lbox = MDBoxLayout(orientation='vertical')
+        self.rbox = MDBoxLayout(orientation='vertical')
         self.box2.add_widget(self.lbox)
         self.box2.add_widget(self.rbox)
         self.screen2.add_widget(self.box2)
         self.sm.add_widget(self.screen2)
 
 
-        self.final_screen = Screen(name='final')
-        self.finalbox = BoxLayout()
+        self.final_screen = MDScreen(name='final')
+        self.finalbox = MDBoxLayout()
         self.final_screen.add_widget(self.finalbox)
         self.sm.add_widget(self.final_screen)
         return self.sm
@@ -107,7 +104,7 @@ class MyApp(App):
         global a
         global b
         global loaded_hours
-        if a == '':
+        if a == '' or a == button.text:
             a = button.text
         else:
             b = button.text
@@ -117,9 +114,6 @@ class MyApp(App):
             self.lbox.clear_widgets()
             self.rbox.clear_widgets()
             self.half_hour()
-
-
-
 
     def half_hour(self):
         global loaded_hours
@@ -131,19 +125,14 @@ class MyApp(App):
             a, b = '', ''
 
             for i in loaded_hours:
-                btn = Button(text=f'{i}',)
-                btn.bind(on_press=self.func)
+                btn = MDFlatButton(text=f'{i}',)
+                btn.bind(on_release=self.func)
 
-                lbl = Label(text=f'{sorted([int(j) for j in loaded_hours[i]])}',
+                lbl = MDLabel(text=f'{sorted([int(j) for j in loaded_hours[i]])}',
                             )
                 self.lbox.add_widget(btn)
                 self.rbox.add_widget(lbl)
                 self.sm.current = 's'
-
-
-
-
-
 
     def sort_hours_priority(self, time):
         d = {}
@@ -152,7 +141,6 @@ class MyApp(App):
             d[s[i][0]] = s[i][-1]
         return d
 
-
     def monday(self, *args):
         global loaded_hours
         logoped = [''.join(i) for i in sheet.get('M3:M242')]
@@ -160,6 +148,17 @@ class MyApp(App):
             if logoped[i] == 'в':
                 try:
                     loaded_hours[names[i]] = [i for i in sheet.get(f'F{i + 4}:L{i + 4}')[0]]
+                except IndexError:
+                    loaded_hours[names[i]] = ['NO']
+        self.general()
+
+    def tuesday(self, *args):
+        global loaded_hours
+        logoped = [''.join(i) for i in sheet.get('W3:W242')]
+        for i in range(len(logoped)):
+            if logoped[i] == 'в':
+                try:
+                    loaded_hours[names[i]] = [i for i in sheet.get(f'P{i + 4}:V{i + 4}')[0]]
                 except IndexError:
                     loaded_hours[names[i]] = ['NO']
         self.general()
@@ -178,6 +177,8 @@ class MyApp(App):
 
         if len(loaded_hours) > 7:
                 self.half_hour()
+        else:
+            self.final()
 
 
     def final(self):
@@ -209,7 +210,8 @@ class MyApp(App):
 
         for i in final_dic:
             final_dic[i] += ':00'
-            
+
+
         true_final_dic = {}
 
         for i in final_dic:
@@ -222,21 +224,28 @@ class MyApp(App):
         final_dic = true_final_dic
 
 
+        data_table = MDDataTable(pos_hint={"center_y": 0.5, "center_x": 0.5},
+            size_hint=(0.9, 0.6),
+            use_pagination=False,
+            column_data=[
+                ('[color=#FF9800][size=25]Пацієнт[/size][/color]', dp(300)),
+                ("[color=#FF9800][size=25]Час заняття[/size][/color]", dp(120)),
+            ])
+
+
+
+
+
         str_f_l = ''
         for i in final_dic:
             str_f_l += f'{i}: {final_dic[i]}\n'
 
-        self.finalbox.add_widget(Label(text=str_f_l))
+        for i in final_dic:
+            data_table.add_row((f'[size=20]{i}[/size]', f'[size=20]{final_dic[i]}[/size]'))
+
+        self.finalbox.add_widget(data_table)
         self.sm.current = 'final'
         return self.sm.current
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
