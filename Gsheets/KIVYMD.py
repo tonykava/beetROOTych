@@ -43,6 +43,7 @@ loaded_hours = {}
 true_loaded_hours = {}
 free_hours = {}
 sample = ['9', '10', '11', '12', '14', '15', '16']
+backup_loaded_hours = {}
 
 class Final_screen_HoverButton(MDRaisedButton, HoverBehavior):
     def on_enter(self, *args):
@@ -218,7 +219,7 @@ class MyApp(MDApp):
     def one_more_time(self, *args):
         global hours_priority, final_dic, loaded_hours, true_loaded_hours, free_hours, sample, current_day
         for i in range(len(final_dic)):
-            self.final_data_table.remove_row(self.final_data_table.row_data[-1])
+                self.final_data_table.remove_row(self.final_data_table.row_data[-1])
         current_day = ''
         hours_priority = {'9': 0,
                           '10': 0,
@@ -241,6 +242,8 @@ class MyApp(MDApp):
         global a
         global b
         global loaded_hours
+        if ''.join(instance_row.text[9:-7:][0].split(',')).isdigit():
+            return None
         if a == '' or a == instance_row.text[9:-7:]:
             a = instance_row.text[9:-7:]
         else:
@@ -331,6 +334,7 @@ class MyApp(MDApp):
     def general(self):
         global hours_priority
         global loaded_hours
+        global backup_loaded_hours
         for i in loaded_hours:
             if loaded_hours[i][0] in pool_hours:
                 loaded_hours[i] += pool_hours[loaded_hours[i][0]]
@@ -339,6 +343,8 @@ class MyApp(MDApp):
         for i in loaded_hours:
             true_loaded_hours[i] = [j[0:2:].lstrip('0') for j in loaded_hours[i] if j != '']
         loaded_hours = true_loaded_hours
+
+        backup_loaded_hours = loaded_hours
 
         if len(loaded_hours) > 7:
             self.half_hour()
@@ -384,7 +390,6 @@ class MyApp(MDApp):
         global loaded_hours
         global a
         global b
-
         if len(loaded_hours) <= 7:
             self.final()
         else:
@@ -395,12 +400,14 @@ class MyApp(MDApp):
             self.sm.current = 'half_hour_screen'
             return self.sm
 
+
+
     def final(self):
         global final_dic
         global hours_priority
         global loaded_hours
         global free_hours
-
+        global backup_loaded_hours
         for i in loaded_hours:
             free_hours[i] = [j for j in sample if j not in loaded_hours[i]]
 
@@ -454,4 +461,3 @@ MyApp().run()
 #except:
     #google.auth.exceptions.TransportError('NO INTERNET')
     #print('NO INTERNET')
-
