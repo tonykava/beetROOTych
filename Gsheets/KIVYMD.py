@@ -1,3 +1,4 @@
+from pprint import pprint
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from kivymd.app import MDApp
@@ -45,6 +46,7 @@ free_hours = {}
 sample = ['9', '10', '11', '12', '14', '15', '16']
 backup_loaded_hours = {}
 
+
 class Final_screen_HoverButton(MDRaisedButton, HoverBehavior):
     def on_enter(self, *args):
         self.text_color = 'orange'
@@ -55,6 +57,7 @@ class Final_screen_HoverButton(MDRaisedButton, HoverBehavior):
         self.text_color = 'black'
         self.md_bg_color = 'orange'
         self.line_color = 'black'
+
 
 class HoverButton(MDRoundFlatButton, HoverBehavior):
     def on_enter(self, *args):
@@ -94,8 +97,6 @@ class MyApp(MDApp):
         self.theme_cls.primary_palette = 'Orange'
         self.sm = MDScreenManager()
 
-
-
         #описуємо стартовий екран
 
         start_screen = MDScreen(name='start_screen')
@@ -131,7 +132,7 @@ class MyApp(MDApp):
 
         day_selection_screen = MDScreen(name='day_selection_screen')
         day_selection_layout = MDFloatLayout()
-        day_selection_lbl = MDFlatButton(text='Обери день будь ласка:', font_size=60, font_name='AA-Haymaker.ttf', pos_hint={"center_x": 0.5, "center_y": 0.8})
+        day_selection_lbl = MDFlatButton(text='Обери день, будь ласка:', font_size=60, font_name='AA-Haymaker.ttf', pos_hint={"center_x": 0.5, "center_y": 0.8})
         day_selection_button_box = MDBoxLayout(orientation='vertical', spacing='16dp', adaptive_size=True,
                           pos_hint={"center_x": .5, "center_y": .5})
         day_selection_btn1 = HoverButton(text='Понеділок', line_width=2, font_size=50, font_name='AA-Haymaker.ttf', pos_hint={"center_x": .5, "center_y": .5})
@@ -203,6 +204,53 @@ class MyApp(MDApp):
         self.half_hour_screen.add_widget(self.half_hour_layout)
         self.sm.add_widget(self.half_hour_screen)
 
+        # описуємо екран помилки
+
+        self.error_screen = MDScreen(name='error_screen')
+        self.error_screen_layout = MDFloatLayout()
+        self.error_screen_lbl = MDLabel()
+        self.error_screen_layout.add_widget(self.error_screen_lbl)
+        self.error_screen.add_widget(self.error_screen_layout)
+        self.sm.add_widget(self.error_screen)
+
+    def error(self, *args):
+        self.dialog1_close()
+        global loaded_hours
+        global sample
+        global backup_loaded_hours
+        global free_hours
+        global final_dic
+        global hours_priority
+        global current_day
+        global true_loaded_hours
+        try:
+            for i in range(len(final_dic)):
+                    self.final_data_table.remove_row(self.final_data_table.row_data[-1])
+        except Exception as e:
+            true_loaded_hours = {}
+            sample = ['9', '10', '11', '12', '14', '15', '16']
+            loaded_hours = backup_loaded_hours
+            final_dic = {}
+            free_hours = {}
+            hours_priority = {'9': 0,
+                          '10': 0,
+                          '11': 0,
+                          '12': 0,
+                          '14': 0,
+                          '15': 0,
+                          '16': 0}
+            if current_day == 'monday':
+                return self.monday()
+            if current_day == 'tuesday':
+                return self.tuesday()
+            if current_day == 'wednesday':
+                return self.wednesday()
+            if current_day == 'thursday':
+                return self.thursday()
+            if current_day == 'friday':
+                return self.friday()
+            if current_day == 'saturday':
+                return self.saturday()
 
     def build(self, *args):
         self.sm.current = 'start_screen'
@@ -236,8 +284,6 @@ class MyApp(MDApp):
         self.sm.current = 'day_selection_screen'
         return self.sm
 
-
-
     def func(self, instance_table, instance_row):
         global a
         global b
@@ -259,7 +305,6 @@ class MyApp(MDApp):
         global current_day
         global loaded_hours
         logoped = [''.join(i) for i in sheet.get('M3:M242')]
-        monday_logoped = logoped
         for i in range(len(logoped)):
             if logoped[i] == 'в':
                 try:
@@ -297,6 +342,7 @@ class MyApp(MDApp):
 
     def thursday(self, *args):
         global loaded_hours
+        global current_day
         logoped = [''.join(i) for i in sheet.get('AO3:AO242')]
         for i in range(len(logoped)):
             if logoped[i] == 'в':
@@ -309,6 +355,7 @@ class MyApp(MDApp):
 
     def friday(self, *args):
         global loaded_hours
+        global current_day
         logoped = [''.join(i) for i in sheet.get('AX3:AX242')]
         for i in range(len(logoped)):
             if logoped[i] == 'в':
@@ -321,6 +368,7 @@ class MyApp(MDApp):
 
     def saturday(self, *args):
         global loaded_hours
+        global current_day
         logoped = [''.join(i) for i in sheet.get('BG3:BG242')]
         for i in range(len(logoped)):
             if logoped[i] == 'в':
@@ -344,7 +392,6 @@ class MyApp(MDApp):
             true_loaded_hours[i] = [j[0:2:].lstrip('0') for j in loaded_hours[i] if j != '']
         loaded_hours = true_loaded_hours
 
-        backup_loaded_hours = loaded_hours
 
         if len(loaded_hours) > 7:
             self.half_hour()
@@ -354,6 +401,8 @@ class MyApp(MDApp):
     def dialog_close(self, *args):
         self.dialog.dismiss(force=True)
 
+    def dialog1_close(self, *args):
+        self.dialog1.dismiss(force=True)
 
     def push(self, *args):
         global current_day
@@ -400,8 +449,6 @@ class MyApp(MDApp):
             self.sm.current = 'half_hour_screen'
             return self.sm
 
-
-
     def final(self):
         global final_dic
         global hours_priority
@@ -416,7 +463,10 @@ class MyApp(MDApp):
                 if i in free_hours[j]:
                     hours_priority[i] += 1
 
+        counter = 0
         while free_hours != {}:
+            if counter >= 30:
+                break
             for i in free_hours:
                 if list(hours_priority)[0] in free_hours[i]:
                     final_dic[i] = list(hours_priority)[0]
@@ -428,6 +478,19 @@ class MyApp(MDApp):
             for i in final_dic:
                 if i in free_hours:
                     free_hours.pop(i)
+            counter += 1
+
+        if counter >= 30:
+            self.dialog1 = MDDialog(
+                title='Упс! Помилочка! Боюся що даний розподіл пацінтів є неможливим. Спробуй інакше розподілити пацієнтів',
+                size_hint=(0.4, 0.3),
+                buttons=[
+                    Final_screen_HoverButton(text='Спробувати ще раз', on_release=self.error,
+                                             font_size=20), Final_screen_HoverButton(text='Жуй сраку', on_release=self.close_application,
+                                             font_size=20)])
+            self.dialog1.open()
+            self.sm.current = 'error_screen'
+            return self.sm
 
         for i in final_dic:
             final_dic[i] += ':00'
@@ -455,9 +518,10 @@ class MyApp(MDApp):
             d[s[i][0]] = s[i][-1]
         return d
 
+if __name__ == '__main__':
+    #try:
+    MyApp().run()
+    #except:
+        #google.auth.exceptions.TransportError('NO INTERNET')
+        #print('NO INTERNET')
 
-#try:
-MyApp().run()
-#except:
-    #google.auth.exceptions.TransportError('NO INTERNET')
-    #print('NO INTERNET')
